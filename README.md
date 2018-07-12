@@ -1,2 +1,3 @@
 # milightd
-Simple web service to control Mi-Light devices.
+
+Simple web service utilizing [milight](https://github.com/sgrzywna/milight) module.
