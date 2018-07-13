@@ -49,20 +49,25 @@ const (
 
 // light represents command to control light.
 type light struct {
-	Color      string `json:"color"`
-	Brightness int    `json:"brightness"`
-	Switch     string `json:"switch"`
+	Color      *string `json:"color"`
+	Brightness *int    `json:"brightness"`
+	Switch     *string `json:"switch"`
 }
 
 func main() {
-	// var mihost = flag.String("mihost", "", "Mi-Light network address")
-	// var miport = flag.Int("miport", 5987, "Mi-Light network port")
+	var mihost = flag.String("mihost", "", "Mi-Light network address")
+	var miport = flag.Int("miport", 5987, "Mi-Light network port")
 	var port = flag.Int("port", 8080, "listening port")
 
 	flag.Parse()
 
+	m := NewMilightController(*mihost, *miport)
+	defer m.Close()
+
 	r := mux.NewRouter()
-	r.HandleFunc("/light", lightHandler).Methods("PUT")
+	r.HandleFunc("/light", func(w http.ResponseWriter, r *http.Request) {
+		lightHandler(w, r, m)
+	}).Methods("PUT")
 
 	srv := &http.Server{
 		Handler:      r,
@@ -71,10 +76,11 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 
+	log.Printf("milightd listening @ :%d\n", *port)
 	log.Fatal(srv.ListenAndServe())
 }
 
-func lightHandler(w http.ResponseWriter, r *http.Request) {
+func lightHandler(w http.ResponseWriter, r *http.Request, m *MilightController) {
 	var l light
 	if r.Body == nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
@@ -85,5 +91,8 @@ func lightHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(l)
+	if l.Switch != nil {
+		log.Printf("milightd light switch %s\n", *l.Switch)
+		m.Process(&LightSwitch{on: *l.Switch == on})
+	}
 }

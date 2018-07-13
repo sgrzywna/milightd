@@ -1,3 +1,3 @@
 # milightd
 
-Simple web service utilizing [milight](https://github.com/sgrzywna/milight) module.
+Simple web service utilizing [milight](https://github.com/sgrzywna/milight).
