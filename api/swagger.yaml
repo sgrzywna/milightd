@@ -38,11 +38,19 @@ definitions:
   Colors:
     type: string
     enum: &COLORS
-      - black
       - white
       - red
+      - orange
+      - yellow
+      - chartreusegreen
       - green
+      - springgreen
+      - cyan
+      - azure
       - blue
+      - violet
+      - magenta
+      - rose
   Switch:
     type: string
     enum: &SWITCH

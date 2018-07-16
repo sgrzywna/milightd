@@ -29,24 +29,6 @@ import (
 //    ]
 // }
 
-const (
-	red             = "red"
-	orange          = "orange"
-	yellow          = "yellow"
-	chartreuseGreen = "chartreusegreen"
-	green           = "green"
-	springGreen     = "springgreen"
-	cyan            = "cyan"
-	azure           = "azure"
-	blue            = "blue"
-	violet          = "violet"
-	magenta         = "magenta"
-	rose            = "rose"
-
-	on  = "on"
-	off = "off"
-)
-
 // light represents command to control light.
 type light struct {
 	Color      *string `json:"color"`
@@ -86,13 +68,41 @@ func lightHandler(w http.ResponseWriter, r *http.Request, m *MilightController) 
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+
 	err := json.NewDecoder(r.Body).Decode(&l)
 	if err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+
+	res := true
+
 	if l.Switch != nil {
 		log.Printf("milightd light switch %s\n", *l.Switch)
-		m.Process(&LightSwitch{on: *l.Switch == on})
+		if !m.Process(&LightSwitch{on: *l.Switch}) {
+			res = false
+			log.Printf("milightd light switch %s failed\n", *l.Switch)
+		}
+	}
+
+	if l.Brightness != nil {
+		log.Printf("milightd brightness %d\n", *l.Brightness)
+		if !m.Process(&LightBrightness{level: *l.Brightness}) {
+			res = false
+			log.Printf("milightd brightness %d failed\n", *l.Brightness)
+		}
+	}
+
+	if l.Color != nil {
+		log.Printf("milightd color %s\n", *l.Color)
+		if !m.Process(&LightColor{color: *l.Color}) {
+			res = false
+			log.Printf("milightd color %s failed\n", *l.Color)
+		}
+	}
+
+	if !res {
+		http.Error(w, "milightd error", http.StatusInternalServerError)
+		return
 	}
 }

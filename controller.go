@@ -16,7 +16,7 @@ const (
 
 // Command represents command to control Mi-Light device.
 type Command interface {
-	Exec() error
+	Exec(*milight.Milight) error
 }
 
 // MilightController controls Mi-Light device.
@@ -54,16 +54,6 @@ func (m *MilightController) Process(c Command) bool {
 
 // loop is the main processing loop.
 func (m *MilightController) loop() {
-	for {
-		ok := m.innerLoop()
-		if !ok {
-			return
-		}
-	}
-}
-
-// innerLoop processes commands.
-func (m *MilightController) innerLoop() bool {
 	var ml *milight.Milight
 	var err error
 	for {
@@ -74,6 +64,14 @@ func (m *MilightController) innerLoop() bool {
 			time.Sleep(waitForMilightTimeout)
 			continue
 		}
+
+		err = ml.InitSession()
+		if err != nil {
+			log.Printf("milight session problem: %s\n", err)
+			time.Sleep(waitForMilightTimeout)
+			continue
+		}
+
 		defer ml.Close()
 
 		log.Printf("milight connected @ %s:%d\n", m.addr, m.port)
@@ -82,12 +80,11 @@ func (m *MilightController) innerLoop() bool {
 		for {
 			cmd, ok := <-m.cmds
 			if !ok {
-				return false
+				return
 			}
-			err = cmd.Exec()
+			err = cmd.Exec(ml)
 			if err != nil {
 				log.Printf("milight command error: %s\n", err)
-				return true
 			}
 		}
 	}
