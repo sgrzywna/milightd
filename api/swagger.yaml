@@ -1,0 +1,58 @@
+swagger: "2.0"
+info:
+  description: "Mi-Light web controller API."
+  version: "0.0.1"
+  title: "Mi-Light API"
+host: "127.0.0.1:8080"
+basePath: "/api/v1"
+tags:
+- name: "Light"
+  description: "Light parameters control."
+schemes:
+- "http"
+paths:
+  /light:
+    put:
+      tags:
+      - "Light"
+      summary: "Set light parameters."
+      parameters:
+        - in: body
+          description: Light parameters.
+          name: "light"
+          schema:
+            $ref: "#/definitions/Light"
+      responses:
+        405:
+          description: "Invalid input"
+definitions:
+  Light:
+    type: object
+    properties:
+      color:
+        $ref: "#/definitions/Colors"
+      brightness:
+        type: integer
+      switch:
+        $ref: "#/definitions/Switch"
+  Colors:
+    type: string
+    enum: &COLORS
+      - white
+      - red
+      - orange
+      - yellow
+      - chartreusegreen
+      - green
+      - springgreen
+      - cyan
+      - azure
+      - blue
+      - violet
+      - magenta
+      - rose
+  Switch:
+    type: string
+    enum: &SWITCH
+      - on
+      - off
