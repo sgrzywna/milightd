@@ -54,6 +54,16 @@ func (m *MilightController) Process(c Command) bool {
 
 // loop is the main processing loop.
 func (m *MilightController) loop() {
+	for {
+		ok := m.innerLoop()
+		if !ok {
+			return
+		}
+	}
+}
+
+// innerLoop is the communication loop.
+func (m *MilightController) innerLoop() bool {
 	var ml *milight.Milight
 	var err error
 	for {
@@ -80,10 +90,13 @@ func (m *MilightController) loop() {
 		for {
 			cmd, ok := <-m.cmds
 			if !ok {
-				return
+				return false
 			}
 			err = cmd.Exec(ml)
 			if err != nil {
+				if err == milight.ErrInvalidResponse {
+					return true
+				}
 				log.Printf("milight command error: %s\n", err)
 			}
 		}
