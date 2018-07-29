@@ -47,7 +47,9 @@ func main() {
 	defer m.Close()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/light", func(w http.ResponseWriter, r *http.Request) {
+	v1 := r.PathPrefix("/api/v1/").Subrouter()
+
+	v1.HandleFunc("/light", func(w http.ResponseWriter, r *http.Request) {
 		lightHandler(w, r, m)
 	}).Methods("PUT")
 
