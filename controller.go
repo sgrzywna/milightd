@@ -14,9 +14,21 @@ const (
 	commandsBufferSize = 3
 )
 
+// light represents command to control light.
+type Light struct {
+	Color      *string `json:"color"`
+	Brightness *int    `json:"brightness"`
+	Switch     *string `json:"switch"`
+}
+
 // Command represents command to control Mi-Light device.
 type Command interface {
 	Exec(*milight.Milight) error
+}
+
+// Controller represents milight controller interface.
+type Controller interface {
+	Process(Light) bool
 }
 
 // MilightController controls Mi-Light device.
@@ -42,8 +54,39 @@ func (m *MilightController) Close() {
 	close(m.cmds)
 }
 
-// Process executes command.
-func (m *MilightController) Process(c Command) bool {
+// Process processes light control command.
+func (m *MilightController) Process(l Light) bool {
+	res := true
+
+	if l.Switch != nil {
+		log.Printf("milightd light switch %s\n", *l.Switch)
+		if !m.exec(&LightSwitch{on: *l.Switch}) {
+			res = false
+			log.Printf("milightd light switch %s failed\n", *l.Switch)
+		}
+	}
+
+	if l.Brightness != nil {
+		log.Printf("milightd brightness %d\n", *l.Brightness)
+		if !m.exec(&LightBrightness{level: *l.Brightness}) {
+			res = false
+			log.Printf("milightd brightness %d failed\n", *l.Brightness)
+		}
+	}
+
+	if l.Color != nil {
+		log.Printf("milightd color %s\n", *l.Color)
+		if !m.exec(&LightColor{color: *l.Color}) {
+			res = false
+			log.Printf("milightd color %s failed\n", *l.Color)
+		}
+	}
+
+	return res
+}
+
+// exec executes command.
+func (m *MilightController) exec(c Command) bool {
 	select {
 	case m.cmds <- c:
 		return true
