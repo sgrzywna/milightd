@@ -14,16 +14,30 @@ const (
 	commandsBufferSize = 3
 )
 
-// light represents command to control light.
-type Light struct {
-	Color      *string `json:"color"`
-	Brightness *int    `json:"brightness"`
-	Switch     *string `json:"switch"`
+// LightController represents API to control the light.
+type LightController interface {
+	// On turns light on.
+	On() error
+	// Off turns light off.
+	Off() error
+	// Color sets light color.
+	Color(color byte) error
+	// White sets white light.
+	White() error
+	// Brightness sets brightness level.
+	Brightness(brightness byte) error
 }
 
 // Command represents command to control Mi-Light device.
 type Command interface {
-	Exec(*milight.Milight) error
+	Exec(LightController) error
+}
+
+// Light represents command to control light.
+type Light struct {
+	Color      *string `json:"color"`
+	Brightness *int    `json:"brightness"`
+	Switch     *string `json:"switch"`
 }
 
 // Controller represents milight controller interface.

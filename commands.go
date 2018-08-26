@@ -47,11 +47,11 @@ type LightSwitch struct {
 }
 
 // Exec executes command.
-func (c *LightSwitch) Exec(ml *milight.Milight) error {
+func (c *LightSwitch) Exec(lc LightController) error {
 	if c.on == on {
-		return ml.On()
+		return lc.On()
 	}
-	return ml.Off()
+	return lc.Off()
 }
 
 // LightBrightness represents command to control light brightness.
@@ -60,8 +60,8 @@ type LightBrightness struct {
 }
 
 // Exec executes command.
-func (c *LightBrightness) Exec(ml *milight.Milight) error {
-	return ml.Brightness(byte(c.level))
+func (c *LightBrightness) Exec(lc LightController) error {
+	return lc.Brightness(byte(c.level))
 }
 
 // LightColor represents command to control light color.
@@ -70,13 +70,13 @@ type LightColor struct {
 }
 
 // Exec executes command.
-func (c *LightColor) Exec(ml *milight.Milight) error {
+func (c *LightColor) Exec(lc LightController) error {
 	if c.color == white {
-		return ml.White()
+		return lc.White()
 	}
 	color, ok := colors[c.color]
 	if !ok {
 		return fmt.Errorf("unsupported color")
 	}
-	return ml.Color(color)
+	return lc.Color(color)
 }

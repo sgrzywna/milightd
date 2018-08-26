@@ -12,7 +12,7 @@ schemes:
 - "http"
 paths:
   /light:
-    put:
+    post:
       tags:
       - "Light"
       summary: "Set light parameters."
