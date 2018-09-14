@@ -8,6 +8,10 @@ basePath: "/api/v1"
 tags:
 - name: "Light"
   description: "Light parameters control."
+- name: "Sequence"
+  description: "Light parameters sequence definition."
+- name: "SequenceState"
+  description: "Light parameters sequence control."
 schemes:
 - "http"
 paths:
@@ -18,11 +22,100 @@ paths:
       summary: "Set light parameters."
       parameters:
         - in: body
-          description: Light parameters.
+          description: "Light parameters."
           name: "light"
           schema:
             $ref: "#/definitions/Light"
       responses:
+        200:
+           description: "OK"
+        405:
+          description: "Invalid input"
+  /sequence:
+    get:
+      tags:
+      - "Sequence"
+      summary: "Retrieve all available sequences."
+      responses:
+        200:
+           description: "OK"
+           schema:
+            $ref: "#/definitions/Sequences"
+    post:
+      tags:
+      - "Sequence"
+      summary: "Create a new sequence."
+      parameters:
+        - in: body
+          description: "Sequence parameters."
+          name: "sequence"
+          schema:
+            $ref: "#/definitions/Sequence"
+      responses:
+        201:
+           description: "Created"
+           schema:
+            $ref: "#/definitions/Sequence"
+        405:
+          description: "Invalid input"
+  /sequence/{seqId}:
+    get:
+      tags:
+      - "Sequence"
+      summary: "Retrieve a single sequence."
+      parameters:
+      - in: path
+        name: seqId
+        type: integer
+        required: true
+        description: Sequence identifier.
+      responses:
+        200:
+           description: "OK"
+           schema:
+            $ref: "#/definitions/Sequence"
+        404:
+          description: "Not found"
+    delete:
+      tags:
+      - "Sequence"
+      summary: "Delete a single sequence."
+      parameters:
+      - in: path
+        name: seqId
+        type: integer
+        required: true
+        description: Sequence identifier.
+      responses:
+        204:
+           description: "No content"
+        405:
+          description: "Invalid input"
+  /sequence/state:
+    get:
+      tags:
+      - "SequenceState"
+      summary: "Retrieve sequence state."
+      responses:
+        200:
+           description: "OK"
+           schema:
+            $ref: "#/definitions/SequenceControl"
+    post:
+      tags:
+      - "SequenceState"
+      summary: "Set sequence state."
+      parameters:
+        - in: body
+          description: "Sequence control command."
+          name: "control"
+          schema:
+            $ref: "#/definitions/SequenceControl"
+      responses:
+        200:
+           description: "OK"
+           schema:
+            $ref: "#/definitions/SequenceControl"
         405:
           description: "Invalid input"
 definitions:
@@ -56,3 +149,40 @@ definitions:
     enum: &SWITCH
       - on
       - off
+  Sequences:
+    type: array
+    items:
+      $ref: "#/definitions/Sequence"
+  Sequence:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      steps:
+        $ref: "#/definitions/SequenceSteps"
+  SequenceSteps:
+    type: array
+    items:
+      $ref: "#/definitions/SequenceStep"
+  SequenceStep:
+    type: object
+    properties:
+      light:
+        $ref: "#/definitions/Light"
+      duration:
+        type: integer
+  SequenceControl:
+    type: object
+    properties:
+      seqId:
+        type: integer
+      state:
+        $ref: "#/definitions/SequenceState"
+  SequenceState:
+    type: string
+    enum: &SEQSTATE
+      - start
+      - stop
+      - pause
