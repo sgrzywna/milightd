@@ -12,9 +12,33 @@ type TestController struct {
 	l Light
 }
 
-func (c *TestController) Process(l Light) bool {
-	c.l = l
+func (m *TestController) Process(l Light) bool {
+	m.l = l
 	return true
+}
+
+func (m *TestController) GetSequences() ([]Sequence, error) {
+	return nil, nil
+}
+
+func (m *TestController) GetSequence(int) (*Sequence, error) {
+	return nil, nil
+}
+
+func (m *TestController) AddSequence(Sequence) error {
+	return nil
+}
+
+func (m *TestController) DeleteSequence(int) error {
+	return nil
+}
+
+func (m *TestController) GetSequenceState() (*SequenceState, error) {
+	return nil, nil
+}
+
+func (m *TestController) SetSequenceState(SequenceState) (*SequenceState, error) {
+	return nil, nil
 }
 
 func TestLightHandler(t *testing.T) {

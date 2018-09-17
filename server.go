@@ -41,6 +41,14 @@ func newRouter(m Controller) *mux.Router {
 		lightHandler(w, r, m)
 	}).Methods("POST")
 
+	// v1.HandleFunc("/sequence", func(w http.ResponseWriter, r *http.Request) {
+	// 	sequenceListHandler(w, r, m)
+	// }).Methods("GET")
+
+	// v1.HandleFunc("/sequence", func(w http.ResponseWriter, r *http.Request) {
+	// 	sequenceStartHandler(w, r, m)
+	// }).Methods("POST")
+
 	return r
 }
 
@@ -62,4 +70,24 @@ func lightHandler(w http.ResponseWriter, r *http.Request, c Controller) {
 		http.Error(w, "milightd error", http.StatusInternalServerError)
 		return
 	}
+}
+
+func sequenceHandler(w http.ResponseWriter, r *http.Request, c Controller) {
+	if r.Body == nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	// var l Light
+
+	// err := json.NewDecoder(r.Body).Decode(&l)
+	// if err != nil {
+	// 	http.Error(w, "bad request", http.StatusBadRequest)
+	// 	return
+	// }
+
+	// if !c.Process(l) {
+	// 	http.Error(w, "milightd error", http.StatusInternalServerError)
+	// 	return
+	// }
 }
