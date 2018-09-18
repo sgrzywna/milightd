@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 
 	scribble "github.com/nanobox-io/golang-scribble"
 )
@@ -38,11 +39,14 @@ func NewSequenceStore(dir string) (*SequenceStore, error) {
 
 // GetAll retrieves all sequences from store.
 func (s *SequenceStore) GetAll() ([]Sequence, error) {
+	sequences := make([]Sequence, 0)
 	records, err := s.db.ReadAll(collection)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return sequences, nil
+		}
 		return nil, err
 	}
-	var sequences []Sequence
 	for _, r := range records {
 		var seq Sequence
 		if err := json.Unmarshal([]byte(r), &seq); err != nil {

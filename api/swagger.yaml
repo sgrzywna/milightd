@@ -10,7 +10,7 @@ tags:
   description: "Light parameters control."
 - name: "Sequence"
   description: "Light parameters sequence definition."
-- name: "SequenceState"
+- name: "SequenceControl"
   description: "Light parameters sequence control."
 schemes:
 - "http"
@@ -58,15 +58,15 @@ paths:
             $ref: "#/definitions/Sequence"
         405:
           description: "Invalid input"
-  /sequence/{seqId}:
+  /sequence/{name}:
     get:
       tags:
       - "Sequence"
       summary: "Retrieve a single sequence."
       parameters:
       - in: path
-        name: seqId
-        type: integer
+        name: name
+        type: string
         required: true
         description: Sequence identifier.
       responses:
@@ -82,8 +82,8 @@ paths:
       summary: "Delete a single sequence."
       parameters:
       - in: path
-        name: seqId
-        type: integer
+        name: name
+        type: string
         required: true
         description: Sequence identifier.
       responses:
@@ -91,10 +91,10 @@ paths:
            description: "No content"
         405:
           description: "Invalid input"
-  /sequence/state:
+  /seqctrl:
     get:
       tags:
-      - "SequenceState"
+      - "SequenceControl"
       summary: "Retrieve sequence state."
       responses:
         200:
@@ -103,7 +103,7 @@ paths:
             $ref: "#/definitions/SequenceControl"
     post:
       tags:
-      - "SequenceState"
+      - "SequenceControl"
       summary: "Set sequence state."
       parameters:
         - in: body
@@ -156,8 +156,6 @@ definitions:
   Sequence:
     type: object
     properties:
-      id:
-        type: integer
       name:
         type: string
       steps:
@@ -176,8 +174,8 @@ definitions:
   SequenceControl:
     type: object
     properties:
-      seqId:
-        type: integer
+      name:
+        type: string
       state:
         $ref: "#/definitions/SequenceState"
   SequenceState:
