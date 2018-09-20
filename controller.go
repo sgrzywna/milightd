@@ -12,6 +12,12 @@ const (
 	waitForMilightTimeout = 3 * time.Second
 	// commandsBufferSize is the size of commands channel.
 	commandsBufferSize = 3
+	// seqRunning represents state of the running sequence.
+	seqRunning = "running"
+	// seqRunning represents state of the stopped sequence.
+	seqStopped = "stopped"
+	// seqRunning represents state of the paused sequence.
+	seqPaused = "paused"
 )
 
 // LightController represents API to control the light.
@@ -33,6 +39,18 @@ type Command interface {
 	Exec(LightController) error
 }
 
+// Sequence represents light control sequence.
+type Sequence struct {
+	Name  string         `json:"name"`
+	Steps []SequenceStep `json:"steps"`
+}
+
+// SequenceStep represents single step from the light control sequence.
+type SequenceStep struct {
+	Light    Light `json:"light"`
+	Duration int   `json:"duration"`
+}
+
 // Light represents command to control light.
 type Light struct {
 	Color      *string `json:"color"`
@@ -40,31 +58,69 @@ type Light struct {
 	Switch     *string `json:"switch"`
 }
 
+// SequenceState represents sequence state.
+type SequenceState struct {
+	Name  string `json:"name"`
+	State string `json:"state"`
+}
+
+// LightAPI represents light control interface.
+type LightAPI interface {
+	// Process processes light control command.
+	Process(Light) bool
+}
+
+// SequenceAPI represents sequence control interface.
+type SequenceAPI interface {
+	// GetSequences returns list of defined sequences.
+	GetSequences() ([]Sequence, error)
+	// GetSequence return sequence definition.
+	GetSequence(string) (*Sequence, error)
+	// AddSequence adds sequence.
+	AddSequence(Sequence) error
+	// DeleteSequence deletes sequence.
+	DeleteSequence(string) error
+	// GetSequenceState returns state of the running sequence.
+	GetSequenceState() (*SequenceState, error)
+	// SetSequenceState control state of the running sequence.
+	SetSequenceState(SequenceState) (*SequenceState, error)
+}
+
 // Controller represents milight controller interface.
 type Controller interface {
-	Process(Light) bool
+	LightAPI
+	SequenceAPI
 }
 
 // MilightController controls Mi-Light device.
 type MilightController struct {
-	addr string
-	port int
-	cmds chan Command
+	addr      string
+	port      int
+	cmds      chan Command
+	sequencer Sequencer
+	store     *SequenceStore
 }
 
 // NewMilightController returns initialized MilightController object.
-func NewMilightController(addr string, port int) *MilightController {
-	c := MilightController{
-		addr: addr,
-		port: port,
-		cmds: make(chan Command, commandsBufferSize),
+func NewMilightController(addr string, port int, storeDir string) (*MilightController, error) {
+	store, err := NewSequenceStore(storeDir)
+	if err != nil {
+		return nil, err
 	}
+	c := MilightController{
+		addr:  addr,
+		port:  port,
+		cmds:  make(chan Command, commandsBufferSize),
+		store: store,
+	}
+	c.sequencer = NewSequenceProcessor(&c)
 	go c.loop()
-	return &c
+	return &c, nil
 }
 
 // Close terminates controller.
 func (m *MilightController) Close() {
+	m.sequencer.Stop()
 	close(m.cmds)
 }
 
@@ -158,4 +214,53 @@ func (m *MilightController) innerLoop() bool {
 			}
 		}
 	}
+}
+
+// GetSequences returns list of defined sequences.
+func (m *MilightController) GetSequences() ([]Sequence, error) {
+	return m.store.GetAll()
+}
+
+// GetSequence return sequence definition.
+func (m *MilightController) GetSequence(name string) (*Sequence, error) {
+	return m.store.Get(name)
+}
+
+// AddSequence adds sequence.
+func (m *MilightController) AddSequence(seq Sequence) error {
+	return m.store.Add(seq)
+}
+
+// DeleteSequence deletes sequence.
+func (m *MilightController) DeleteSequence(name string) error {
+	return m.store.Remove(name)
+}
+
+// GetSequenceState returns state of the running sequence.
+func (m *MilightController) GetSequenceState() (*SequenceState, error) {
+	var state SequenceState
+	sts := m.sequencer.Status()
+	if sts != nil {
+		state.Name = sts.Name
+		state.State = seqRunning
+	} else {
+		state.State = seqStopped
+	}
+	return &state, nil
+}
+
+// SetSequenceState control state of the running sequence.
+func (m *MilightController) SetSequenceState(state SequenceState) (*SequenceState, error) {
+	switch state.State {
+	case seqRunning:
+		seq, err := m.store.Get(state.Name)
+		if err != nil {
+			return nil, err
+		}
+		m.sequencer.Start(seq)
+	default:
+		m.sequencer.Stop()
+	}
+
+	return m.GetSequenceState()
 }
