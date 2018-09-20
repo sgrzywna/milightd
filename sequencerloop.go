@@ -53,6 +53,6 @@ func (l *SequencerLoop) processStep() time.Duration {
 	if l.step >= len(l.seq.Steps) {
 		l.step = 0
 	}
-	l.lightCtrl.Process(l.seq.Steps[l.step].Light)
+	l.lightCtrl.Process(true, l.seq.Steps[l.step].Light)
 	return time.Duration(l.seq.Steps[l.step].Duration) * time.Millisecond
 }

@@ -67,7 +67,7 @@ type SequenceState struct {
 // LightAPI represents light control interface.
 type LightAPI interface {
 	// Process processes light control command.
-	Process(Light) bool
+	Process(bool, Light) bool
 }
 
 // SequenceAPI represents sequence control interface.
@@ -125,7 +125,11 @@ func (m *MilightController) Close() {
 }
 
 // Process processes light control command.
-func (m *MilightController) Process(l Light) bool {
+func (m *MilightController) Process(fromSequence bool, l Light) bool {
+	if !fromSequence {
+		m.sequencer.Stop()
+	}
+
 	res := true
 
 	if l.Switch != nil {

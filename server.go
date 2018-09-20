@@ -78,7 +78,7 @@ func lightHandler(w http.ResponseWriter, r *http.Request, c Controller) {
 	}
 	defer r.Body.Close()
 
-	if !c.Process(l) {
+	if !c.Process(false, l) {
 		http.Error(w, "milightd error", http.StatusInternalServerError)
 		return
 	}
