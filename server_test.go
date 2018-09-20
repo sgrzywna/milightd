@@ -17,7 +17,7 @@ type TestController struct {
 	state     SequenceState
 }
 
-func (m *TestController) Process(l Light) bool {
+func (m *TestController) Process(fromSequence bool, l Light) bool {
 	m.l = l
 	return true
 }

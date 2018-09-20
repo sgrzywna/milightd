@@ -10,7 +10,7 @@ type LightAPIRecorder struct {
 	calls []Light
 }
 
-func (r *LightAPIRecorder) Process(l Light) bool {
+func (r *LightAPIRecorder) Process(fromSequence bool, l Light) bool {
 	r.calls = append(r.calls, l)
 	return true
 }
