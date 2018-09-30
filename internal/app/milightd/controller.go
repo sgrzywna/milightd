@@ -1,7 +1,9 @@
 package milightd
 
 import (
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/sgrzywna/milight"
@@ -12,12 +14,12 @@ const (
 	waitForMilightTimeout = 3 * time.Second
 	// commandsBufferSize is the size of commands channel.
 	commandsBufferSize = 3
-	// seqRunning represents state of the running sequence.
-	seqRunning = "running"
-	// seqRunning represents state of the stopped sequence.
-	seqStopped = "stopped"
-	// seqRunning represents state of the paused sequence.
-	seqPaused = "paused"
+	// SeqRunning represents state of the running sequence.
+	SeqRunning = "running"
+	// SeqRunning represents state of the stopped sequence.
+	SeqStopped = "stopped"
+	// SeqRunning represents state of the paused sequence.
+	SeqPaused = "paused"
 )
 
 // LightController represents API to control the light.
@@ -56,6 +58,27 @@ type Light struct {
 	Color      *string `json:"color"`
 	Brightness *int    `json:"brightness"`
 	Switch     *string `json:"switch"`
+}
+
+// String implements string representation for the Light structure.
+func (l *Light) String() string {
+	var items []string
+	if l.Color != nil {
+		items = append(items, fmt.Sprintf("color:%s", *l.Color))
+	} else {
+		items = append(items, "color:nil")
+	}
+	if l.Brightness != nil {
+		items = append(items, fmt.Sprintf("brightness:%d", *l.Brightness))
+	} else {
+		items = append(items, "brightness:nil")
+	}
+	if l.Switch != nil {
+		items = append(items, fmt.Sprintf("switch:%s", *l.Switch))
+	} else {
+		items = append(items, "switch:nil")
+	}
+	return strings.Join(items, ",")
 }
 
 // SequenceState represents sequence state.
@@ -246,9 +269,9 @@ func (m *MilightController) GetSequenceState() (*SequenceState, error) {
 	sts := m.sequencer.Status()
 	if sts != nil {
 		state.Name = sts.Name
-		state.State = seqRunning
+		state.State = SeqRunning
 	} else {
-		state.State = seqStopped
+		state.State = SeqStopped
 	}
 	return &state, nil
 }
@@ -256,7 +279,7 @@ func (m *MilightController) GetSequenceState() (*SequenceState, error) {
 // SetSequenceState control state of the running sequence.
 func (m *MilightController) SetSequenceState(state SequenceState) (*SequenceState, error) {
 	switch state.State {
-	case seqRunning:
+	case SeqRunning:
 		seq, err := m.store.Get(state.Name)
 		if err != nil {
 			return nil, err

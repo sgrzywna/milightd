@@ -208,7 +208,7 @@ func TestGetSequenceState(t *testing.T) {
 
 	testState := SequenceState{
 		Name:  tests[0].Name,
-		State: seqRunning,
+		State: SeqRunning,
 	}
 
 	c := TestController{}
@@ -230,7 +230,7 @@ func TestGetSequenceState(t *testing.T) {
 func TestSetSequenceState(t *testing.T) {
 	testState := SequenceState{
 		Name:  tests[0].Name,
-		State: seqRunning,
+		State: SeqRunning,
 	}
 
 	data, err := json.Marshal(testState)
