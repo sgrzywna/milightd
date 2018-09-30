@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/sgrzywna/milightd/internal/app/milightd"
 )
 
 const (
@@ -26,13 +28,13 @@ func main() {
 
 	flag.Parse()
 
-	m, err := NewMilightController(*mihost, *miport, *storeDir)
+	m, err := milightd.NewMilightController(*mihost, *miport, *storeDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer m.Close()
 
-	srv := NewServer(*port, m)
+	srv := milightd.NewServer(*port, m)
 
 	log.Printf("milightd listening @ :%d\n", *port)
 	log.Fatal(srv.ListenAndServe())
