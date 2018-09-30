@@ -1,4 +1,4 @@
-package main
+package milightd
 
 // Sequencer defines sequencer interface.
 type Sequencer interface {
