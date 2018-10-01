@@ -1,12 +1,11 @@
 package milightd
 
 import (
-	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/sgrzywna/milight"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 const (
@@ -14,12 +13,6 @@ const (
 	waitForMilightTimeout = 3 * time.Second
 	// commandsBufferSize is the size of commands channel.
 	commandsBufferSize = 3
-	// SeqRunning represents state of the running sequence.
-	SeqRunning = "running"
-	// SeqRunning represents state of the stopped sequence.
-	SeqStopped = "stopped"
-	// SeqRunning represents state of the paused sequence.
-	SeqPaused = "paused"
 )
 
 // LightController represents API to control the light.
@@ -41,72 +34,26 @@ type Command interface {
 	Exec(LightController) error
 }
 
-// Sequence represents light control sequence.
-type Sequence struct {
-	Name  string         `json:"name"`
-	Steps []SequenceStep `json:"steps"`
-}
-
-// SequenceStep represents single step from the light control sequence.
-type SequenceStep struct {
-	Light    Light `json:"light"`
-	Duration int   `json:"duration"`
-}
-
-// Light represents command to control light.
-type Light struct {
-	Color      *string `json:"color"`
-	Brightness *int    `json:"brightness"`
-	Switch     *string `json:"switch"`
-}
-
-// String implements string representation for the Light structure.
-func (l *Light) String() string {
-	var items []string
-	if l.Color != nil {
-		items = append(items, fmt.Sprintf("color:%s", *l.Color))
-	} else {
-		items = append(items, "color:nil")
-	}
-	if l.Brightness != nil {
-		items = append(items, fmt.Sprintf("brightness:%d", *l.Brightness))
-	} else {
-		items = append(items, "brightness:nil")
-	}
-	if l.Switch != nil {
-		items = append(items, fmt.Sprintf("switch:%s", *l.Switch))
-	} else {
-		items = append(items, "switch:nil")
-	}
-	return strings.Join(items, ",")
-}
-
-// SequenceState represents sequence state.
-type SequenceState struct {
-	Name  string `json:"name"`
-	State string `json:"state"`
-}
-
 // LightAPI represents light control interface.
 type LightAPI interface {
 	// Process processes light control command.
-	Process(bool, Light) bool
+	Process(bool, models.Light) bool
 }
 
 // SequenceAPI represents sequence control interface.
 type SequenceAPI interface {
 	// GetSequences returns list of defined sequences.
-	GetSequences() ([]Sequence, error)
+	GetSequences() ([]models.Sequence, error)
 	// GetSequence return sequence definition.
-	GetSequence(string) (*Sequence, error)
+	GetSequence(string) (*models.Sequence, error)
 	// AddSequence adds sequence.
-	AddSequence(Sequence) error
+	AddSequence(models.Sequence) error
 	// DeleteSequence deletes sequence.
 	DeleteSequence(string) error
 	// GetSequenceState returns state of the running sequence.
-	GetSequenceState() (*SequenceState, error)
+	GetSequenceState() (*models.SequenceState, error)
 	// SetSequenceState control state of the running sequence.
-	SetSequenceState(SequenceState) (*SequenceState, error)
+	SetSequenceState(models.SequenceState) (*models.SequenceState, error)
 }
 
 // Controller represents milight controller interface.
@@ -148,7 +95,7 @@ func (m *MilightController) Close() {
 }
 
 // Process processes light control command.
-func (m *MilightController) Process(fromSequence bool, l Light) bool {
+func (m *MilightController) Process(fromSequence bool, l models.Light) bool {
 	if !fromSequence {
 		m.sequencer.Stop()
 	}
@@ -244,17 +191,17 @@ func (m *MilightController) innerLoop() bool {
 }
 
 // GetSequences returns list of defined sequences.
-func (m *MilightController) GetSequences() ([]Sequence, error) {
+func (m *MilightController) GetSequences() ([]models.Sequence, error) {
 	return m.store.GetAll()
 }
 
 // GetSequence return sequence definition.
-func (m *MilightController) GetSequence(name string) (*Sequence, error) {
+func (m *MilightController) GetSequence(name string) (*models.Sequence, error) {
 	return m.store.Get(name)
 }
 
 // AddSequence adds sequence.
-func (m *MilightController) AddSequence(seq Sequence) error {
+func (m *MilightController) AddSequence(seq models.Sequence) error {
 	return m.store.Add(seq)
 }
 
@@ -264,22 +211,22 @@ func (m *MilightController) DeleteSequence(name string) error {
 }
 
 // GetSequenceState returns state of the running sequence.
-func (m *MilightController) GetSequenceState() (*SequenceState, error) {
-	var state SequenceState
+func (m *MilightController) GetSequenceState() (*models.SequenceState, error) {
+	var state models.SequenceState
 	sts := m.sequencer.Status()
 	if sts != nil {
 		state.Name = sts.Name
-		state.State = SeqRunning
+		state.State = models.SeqRunning
 	} else {
-		state.State = SeqStopped
+		state.State = models.SeqStopped
 	}
 	return &state, nil
 }
 
 // SetSequenceState control state of the running sequence.
-func (m *MilightController) SetSequenceState(state SequenceState) (*SequenceState, error) {
+func (m *MilightController) SetSequenceState(state models.SequenceState) (*models.SequenceState, error) {
 	switch state.State {
-	case SeqRunning:
+	case models.SeqRunning:
 		seq, err := m.store.Get(state.Name)
 		if err != nil {
 			return nil, err

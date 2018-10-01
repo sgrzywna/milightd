@@ -8,30 +8,32 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 type TestController struct {
-	l         Light
-	sequences []Sequence
+	l         models.Light
+	sequences []models.Sequence
 	name      string
-	state     SequenceState
+	state     models.SequenceState
 }
 
-func (m *TestController) Process(fromSequence bool, l Light) bool {
+func (m *TestController) Process(fromSequence bool, l models.Light) bool {
 	m.l = l
 	return true
 }
 
-func (m *TestController) GetSequences() ([]Sequence, error) {
+func (m *TestController) GetSequences() ([]models.Sequence, error) {
 	return m.sequences, nil
 }
 
-func (m *TestController) GetSequence(name string) (*Sequence, error) {
+func (m *TestController) GetSequence(name string) (*models.Sequence, error) {
 	m.name = name
 	return &m.sequences[0], nil
 }
 
-func (m *TestController) AddSequence(seq Sequence) error {
+func (m *TestController) AddSequence(seq models.Sequence) error {
 	m.sequences = append(m.sequences, seq)
 	return nil
 }
@@ -41,11 +43,11 @@ func (m *TestController) DeleteSequence(name string) error {
 	return nil
 }
 
-func (m *TestController) GetSequenceState() (*SequenceState, error) {
+func (m *TestController) GetSequenceState() (*models.SequenceState, error) {
 	return &m.state, nil
 }
 
-func (m *TestController) SetSequenceState(state SequenceState) (*SequenceState, error) {
+func (m *TestController) SetSequenceState(state models.SequenceState) (*models.SequenceState, error) {
 	m.state = state
 	return &m.state, nil
 }
@@ -108,7 +110,7 @@ func TestGetSequences(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK)
 	}
 
-	var sequences []Sequence
+	var sequences []models.Sequence
 
 	err = json.NewDecoder(rr.Body).Decode(&sequences)
 	if err != nil {
@@ -141,7 +143,7 @@ func TestGetSequence(t *testing.T) {
 		t.Errorf("expected %s, got %s", tests[0].Name, c.name)
 	}
 
-	var seq Sequence
+	var seq models.Sequence
 
 	err = json.NewDecoder(rr.Body).Decode(&seq)
 	if err != nil {
@@ -206,9 +208,9 @@ func TestGetSequenceState(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testState := SequenceState{
+	testState := models.SequenceState{
 		Name:  tests[0].Name,
-		State: SeqRunning,
+		State: models.SeqRunning,
 	}
 
 	c := TestController{}
@@ -228,9 +230,9 @@ func TestGetSequenceState(t *testing.T) {
 }
 
 func TestSetSequenceState(t *testing.T) {
-	testState := SequenceState{
+	testState := models.SequenceState{
 		Name:  tests[0].Name,
-		State: SeqRunning,
+		State: models.SeqRunning,
 	}
 
 	data, err := json.Marshal(testState)

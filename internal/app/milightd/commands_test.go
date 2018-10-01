@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/sgrzywna/milight"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 type TestLightController struct {
@@ -40,7 +41,7 @@ func (lc *TestLightController) Brightness(brightness byte) error {
 }
 
 func TestLightSwitchOn(t *testing.T) {
-	c := LightSwitch{On}
+	c := LightSwitch{models.On}
 	lc := TestLightController{}
 	err := c.Exec(&lc)
 	if err != nil {
@@ -55,7 +56,7 @@ func TestLightSwitchOn(t *testing.T) {
 }
 
 func TestLightSwitchOff(t *testing.T) {
-	c := LightSwitch{Off}
+	c := LightSwitch{models.Off}
 	lc := TestLightController{}
 	err := c.Exec(&lc)
 	if err != nil {

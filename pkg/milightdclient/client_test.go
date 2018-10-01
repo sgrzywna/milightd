@@ -7,40 +7,38 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/sgrzywna/milightd/internal/app/milightd"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 func TestSetLight(t *testing.T) {
 	// empty
-	l0 := Light{}
+	l0 := models.Light{}
 	// all set
-	l1 := Light{}
+	l1 := models.Light{}
 	l1.SetColor("color")
 	l1.SetBrightness(3)
 	l1.SetSwitch(true)
 	// just color
-	l2 := Light{}
+	l2 := models.Light{}
 	l2.SetColor("color")
 	// just brightness
-	l3 := Light{}
+	l3 := models.Light{}
 	l3.SetBrightness(3)
 	// just switch
-	l4 := Light{}
+	l4 := models.Light{}
 	l4.SetSwitch(true)
 
-	cases := []Light{l0, l1, l2, l3, l4}
+	cases := []models.Light{l0, l1, l2, l3, l4}
 
-	var expected Light
+	var expected models.Light
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var l milightd.Light
-		err := json.NewDecoder(r.Body).Decode(&l)
+		err := json.NewDecoder(r.Body).Decode(&expected)
 		if err != nil {
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
-		expected.Assign(l)
 	}))
 	defer server.Close()
 
@@ -68,20 +66,20 @@ var (
 	b1 = 2
 	s1 = "off"
 
-	tests = []milightd.Sequence{
-		milightd.Sequence{
+	tests = []models.Sequence{
+		models.Sequence{
 			Name: n0,
-			Steps: []milightd.SequenceStep{
-				milightd.SequenceStep{
-					Light: milightd.Light{
+			Steps: []models.SequenceStep{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c0,
 						Brightness: &b0,
 						Switch:     &s0,
 					},
 					Duration: 100,
 				},
-				milightd.SequenceStep{
-					Light: milightd.Light{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c1,
 						Brightness: &b1,
 						Switch:     &s1,
@@ -90,19 +88,19 @@ var (
 				},
 			},
 		},
-		milightd.Sequence{
+		models.Sequence{
 			Name: n1,
-			Steps: []milightd.SequenceStep{
-				milightd.SequenceStep{
-					Light: milightd.Light{
+			Steps: []models.SequenceStep{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c1,
 						Brightness: &b1,
 						Switch:     &s1,
 					},
 					Duration: 300,
 				},
-				milightd.SequenceStep{
-					Light: milightd.Light{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c0,
 						Brightness: &b0,
 						Switch:     &s0,
@@ -138,7 +136,7 @@ func TestGetSequences(t *testing.T) {
 }
 
 func TestAddSequence(t *testing.T) {
-	var expected milightd.Sequence
+	var expected models.Sequence
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&expected)
@@ -201,9 +199,9 @@ func TestDeleteSequence(t *testing.T) {
 }
 
 func TestGetSequenceState(t *testing.T) {
-	testState := milightd.SequenceState{
+	testState := models.SequenceState{
 		Name:  tests[0].Name,
-		State: milightd.SeqRunning,
+		State: models.SeqRunning,
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -229,7 +227,7 @@ func TestGetSequenceState(t *testing.T) {
 }
 
 func TestSetSequenceState(t *testing.T) {
-	var expected milightd.SequenceState
+	var expected models.SequenceState
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&expected)
@@ -243,9 +241,9 @@ func TestSetSequenceState(t *testing.T) {
 
 	c := NewClient(server.URL)
 
-	testState := milightd.SequenceState{
+	testState := models.SequenceState{
 		Name:  tests[0].Name,
-		State: milightd.SeqRunning,
+		State: models.SeqRunning,
 	}
 
 	err := c.SetSequenceState(testState)

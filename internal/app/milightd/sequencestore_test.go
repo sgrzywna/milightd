@@ -5,6 +5,8 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 var (
@@ -18,20 +20,20 @@ var (
 	b1 = 2
 	s1 = "off"
 
-	tests = []Sequence{
-		Sequence{
+	tests = []models.Sequence{
+		models.Sequence{
 			Name: n0,
-			Steps: []SequenceStep{
-				SequenceStep{
-					Light: Light{
+			Steps: []models.SequenceStep{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c0,
 						Brightness: &b0,
 						Switch:     &s0,
 					},
 					Duration: 100,
 				},
-				SequenceStep{
-					Light: Light{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c1,
 						Brightness: &b1,
 						Switch:     &s1,
@@ -40,19 +42,19 @@ var (
 				},
 			},
 		},
-		Sequence{
+		models.Sequence{
 			Name: n1,
-			Steps: []SequenceStep{
-				SequenceStep{
-					Light: Light{
+			Steps: []models.SequenceStep{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c1,
 						Brightness: &b1,
 						Switch:     &s1,
 					},
 					Duration: 300,
 				},
-				SequenceStep{
-					Light: Light{
+				models.SequenceStep{
+					Light: models.Light{
 						Color:      &c0,
 						Brightness: &b0,
 						Switch:     &s0,

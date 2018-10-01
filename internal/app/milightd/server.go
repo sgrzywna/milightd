@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 // Server represents milightd HTTP server.
@@ -69,7 +70,7 @@ func newRouter(m Controller) *mux.Router {
 }
 
 func lightHandler(w http.ResponseWriter, r *http.Request, c Controller) {
-	var l Light
+	var l models.Light
 
 	err := json.NewDecoder(r.Body).Decode(&l)
 	if err != nil {
@@ -101,7 +102,7 @@ func listSequences(w http.ResponseWriter, r *http.Request, c Controller) {
 }
 
 func addSequence(w http.ResponseWriter, r *http.Request, c Controller) {
-	var seq Sequence
+	var seq models.Sequence
 
 	err := json.NewDecoder(r.Body).Decode(&seq)
 	if err != nil {
@@ -179,7 +180,7 @@ func getSequenceState(w http.ResponseWriter, r *http.Request, c Controller) {
 }
 
 func setSequenceState(w http.ResponseWriter, r *http.Request, c Controller) {
-	var state SequenceState
+	var state models.SequenceState
 
 	err := json.NewDecoder(r.Body).Decode(&state)
 	if err != nil {

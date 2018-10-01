@@ -2,19 +2,21 @@ package milightd
 
 import (
 	"time"
+
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 // SequencerLoop represents sequencer loop.
 type SequencerLoop struct {
 	lightCtrl LightAPI
-	seq       *Sequence
+	seq       *models.Sequence
 	stop      chan struct{}
 	finished  chan bool
 	step      int
 }
 
 // NewSequencerLoop returns initialized SequencerLoop object.
-func NewSequencerLoop(lightCtrl LightAPI, seq *Sequence) *SequencerLoop {
+func NewSequencerLoop(lightCtrl LightAPI, seq *models.Sequence) *SequencerLoop {
 	loop := SequencerLoop{
 		lightCtrl: lightCtrl,
 		seq:       seq,
