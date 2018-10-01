@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/sgrzywna/milight"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 const (
@@ -20,11 +21,6 @@ const (
 	violet          = "violet"
 	magenta         = "magenta"
 	rose            = "rose"
-
-	// On turns light on.
-	On = "on"
-	// Off turns light off.
-	Off = "off"
 )
 
 // colors maps color name with corresponding color value.
@@ -50,7 +46,7 @@ type LightSwitch struct {
 
 // Exec executes command.
 func (c *LightSwitch) Exec(lc LightController) error {
-	if c.on == On {
+	if c.on == models.On {
 		return lc.On()
 	}
 	return lc.Off()
