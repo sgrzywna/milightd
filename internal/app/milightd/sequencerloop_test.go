@@ -4,13 +4,15 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 type LightAPIRecorder struct {
-	calls []Light
+	calls []models.Light
 }
 
-func (r *LightAPIRecorder) Process(fromSequence bool, l Light) bool {
+func (r *LightAPIRecorder) Process(fromSequence bool, l models.Light) bool {
 	r.calls = append(r.calls, l)
 	return true
 }
@@ -28,19 +30,19 @@ func TestSequencerLoop(t *testing.T) {
 		s1 = "off"
 	)
 
-	seq := Sequence{
+	seq := models.Sequence{
 		Name: n0,
-		Steps: []SequenceStep{
-			SequenceStep{
-				Light: Light{
+		Steps: []models.SequenceStep{
+			models.SequenceStep{
+				Light: models.Light{
 					Color:      &c0,
 					Brightness: &b0,
 					Switch:     &s0,
 				},
 				Duration: 100,
 			},
-			SequenceStep{
-				Light: Light{
+			models.SequenceStep{
+				Light: models.Light{
 					Color:      &c1,
 					Brightness: &b1,
 					Switch:     &s1,

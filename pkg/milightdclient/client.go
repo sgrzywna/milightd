@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sgrzywna/milightd/internal/app/milightd"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 // Client represents HTTP client for the milightd daemon.
@@ -28,16 +28,10 @@ func NewClient(url string) *Client {
 }
 
 // SetLight controls mi-light device through milightd daemon.
-func (c *Client) SetLight(l Light) error {
+func (c *Client) SetLight(l models.Light) error {
 	url := fmt.Sprintf("%s/api/v1/light", c.url)
 
-	var cmd = milightd.Light{
-		Color:      l.Color,
-		Brightness: l.Brightness,
-		Switch:     l.Switch,
-	}
-
-	data, err := json.Marshal(cmd)
+	data, err := json.Marshal(l)
 	if err != nil {
 		return err
 	}
@@ -64,7 +58,7 @@ func (c *Client) SetLight(l Light) error {
 }
 
 // GetSequences returns list of defined sequences from milightd daemon.
-func (c *Client) GetSequences() ([]milightd.Sequence, error) {
+func (c *Client) GetSequences() ([]models.Sequence, error) {
 	url := fmt.Sprintf("%s/api/v1/sequence", c.url)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -85,7 +79,7 @@ func (c *Client) GetSequences() ([]milightd.Sequence, error) {
 		return nil, fmt.Errorf("milightd client: unexpected status code: %d", resp.StatusCode)
 	}
 
-	var sequences []milightd.Sequence
+	var sequences []models.Sequence
 
 	err = json.NewDecoder(resp.Body).Decode(&sequences)
 	if err != nil {
@@ -96,7 +90,7 @@ func (c *Client) GetSequences() ([]milightd.Sequence, error) {
 }
 
 // AddSequence adds sequence through milightd daemon.
-func (c *Client) AddSequence(seq milightd.Sequence) error {
+func (c *Client) AddSequence(seq models.Sequence) error {
 	url := fmt.Sprintf("%s/api/v1/sequence", c.url)
 
 	data, err := json.Marshal(seq)
@@ -126,7 +120,7 @@ func (c *Client) AddSequence(seq milightd.Sequence) error {
 }
 
 // GetSequence return sequence definition from milightd daemon.
-func (c *Client) GetSequence(name string) (*milightd.Sequence, error) {
+func (c *Client) GetSequence(name string) (*models.Sequence, error) {
 	url := fmt.Sprintf("%s/api/v1/sequence/%s", c.url, name)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -145,7 +139,7 @@ func (c *Client) GetSequence(name string) (*milightd.Sequence, error) {
 		return nil, fmt.Errorf("milightd client: unexpected status code: %d", resp.StatusCode)
 	}
 
-	var seq milightd.Sequence
+	var seq models.Sequence
 
 	err = json.NewDecoder(resp.Body).Decode(&seq)
 	if err != nil {
@@ -179,7 +173,7 @@ func (c *Client) DeleteSequence(name string) error {
 }
 
 // GetSequenceState returns state of the running sequence from milightd daemon.
-func (c *Client) GetSequenceState() (*milightd.SequenceState, error) {
+func (c *Client) GetSequenceState() (*models.SequenceState, error) {
 	url := fmt.Sprintf("%s/api/v1/seqctrl", c.url)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -198,7 +192,7 @@ func (c *Client) GetSequenceState() (*milightd.SequenceState, error) {
 		return nil, fmt.Errorf("milightd client: unexpected status code: %d", resp.StatusCode)
 	}
 
-	var state milightd.SequenceState
+	var state models.SequenceState
 
 	err = json.NewDecoder(resp.Body).Decode(&state)
 	if err != nil {
@@ -209,7 +203,7 @@ func (c *Client) GetSequenceState() (*milightd.SequenceState, error) {
 }
 
 // SetSequenceState control state of the running sequence through milightd daemon.
-func (c *Client) SetSequenceState(state milightd.SequenceState) error {
+func (c *Client) SetSequenceState(state models.SequenceState) error {
 	url := fmt.Sprintf("%s/api/v1/seqctrl", c.url)
 
 	data, err := json.Marshal(state)

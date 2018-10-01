@@ -5,16 +5,17 @@ import (
 	"os"
 
 	scribble "github.com/nanobox-io/golang-scribble"
+	"github.com/sgrzywna/milightd/pkg/models"
 )
 
 // SequenceStorer represents sequence store interface.
 type SequenceStorer interface {
 	// GetAll retrieves all sequences from store.
-	GetAll() ([]Sequence, error)
+	GetAll() ([]models.Sequence, error)
 	// Get retrieve single sequence from store.
-	Get(string) (*Sequence, error)
+	Get(string) (*models.Sequence, error)
 	// Add stores single sequence into store.
-	Add(Sequence) error
+	Add(models.Sequence) error
 	// Remove removes single sequence from store.
 	Remove(string) error
 }
@@ -38,8 +39,8 @@ func NewSequenceStore(dir string) (*SequenceStore, error) {
 }
 
 // GetAll retrieves all sequences from store.
-func (s *SequenceStore) GetAll() ([]Sequence, error) {
-	sequences := make([]Sequence, 0)
+func (s *SequenceStore) GetAll() ([]models.Sequence, error) {
+	sequences := make([]models.Sequence, 0)
 	records, err := s.db.ReadAll(collection)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -48,7 +49,7 @@ func (s *SequenceStore) GetAll() ([]Sequence, error) {
 		return nil, err
 	}
 	for _, r := range records {
-		var seq Sequence
+		var seq models.Sequence
 		if err := json.Unmarshal([]byte(r), &seq); err != nil {
 			return nil, err
 		}
@@ -58,8 +59,8 @@ func (s *SequenceStore) GetAll() ([]Sequence, error) {
 }
 
 // Get retrieve single sequence from store.
-func (s *SequenceStore) Get(name string) (*Sequence, error) {
-	var seq Sequence
+func (s *SequenceStore) Get(name string) (*models.Sequence, error) {
+	var seq models.Sequence
 	if err := s.db.Read(collection, name, &seq); err != nil {
 		return nil, err
 	}
@@ -67,7 +68,7 @@ func (s *SequenceStore) Get(name string) (*Sequence, error) {
 }
 
 // Add stores single sequence into store.
-func (s *SequenceStore) Add(seq Sequence) error {
+func (s *SequenceStore) Add(seq models.Sequence) error {
 	return s.db.Write(collection, seq.Name, seq)
 }
 
