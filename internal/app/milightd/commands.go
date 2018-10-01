@@ -1,4 +1,4 @@
-package main
+package milightd
 
 import (
 	"fmt"
@@ -21,8 +21,10 @@ const (
 	magenta         = "magenta"
 	rose            = "rose"
 
-	on  = "on"
-	off = "off"
+	// On turns light on.
+	On = "on"
+	// Off turns light off.
+	Off = "off"
 )
 
 // colors maps color name with corresponding color value.
@@ -48,7 +50,7 @@ type LightSwitch struct {
 
 // Exec executes command.
 func (c *LightSwitch) Exec(lc LightController) error {
-	if c.on == on {
+	if c.on == On {
 		return lc.On()
 	}
 	return lc.Off()

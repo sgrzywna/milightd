@@ -1,4 +1,4 @@
-package main
+package milightd
 
 import (
 	"testing"
@@ -40,7 +40,7 @@ func (lc *TestLightController) Brightness(brightness byte) error {
 }
 
 func TestLightSwitchOn(t *testing.T) {
-	c := LightSwitch{on}
+	c := LightSwitch{On}
 	lc := TestLightController{}
 	err := c.Exec(&lc)
 	if err != nil {
@@ -55,7 +55,7 @@ func TestLightSwitchOn(t *testing.T) {
 }
 
 func TestLightSwitchOff(t *testing.T) {
-	c := LightSwitch{off}
+	c := LightSwitch{Off}
 	lc := TestLightController{}
 	err := c.Exec(&lc)
 	if err != nil {
