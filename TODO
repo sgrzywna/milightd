@@ -1,0 +1,14 @@
+* connect to milight device only when neccessary
+- when changing light state
+- when running sequence
+
+* implement "connection manager" that will manage connection to milight device
+- disconnect when idle for some time (why not to terminate immediately?)
+- keep connected when in use
+- allocate/release interface
+
+* implement tasks processor
+- "simple" task that changes light state
+- "sequence" task that runs sequence
+- only one task at the moment
+- task get milight connection from connection manager
