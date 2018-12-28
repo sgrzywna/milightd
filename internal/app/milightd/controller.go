@@ -1,6 +1,7 @@
 package milightd
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -13,6 +14,11 @@ const (
 	waitForMilightTimeout = 3 * time.Second
 	// commandsBufferSize is the size of commands channel.
 	commandsBufferSize = 3
+)
+
+var (
+	// errAllocateConnection is returned when there is an error with Mi-Light connection allocation.
+	errAllocateConnection = errors.New("can't allocate connection")
 )
 
 // LightController represents API to control the light.
@@ -153,20 +159,26 @@ func (m *MilightController) loop() {
 		if !ok {
 			return
 		}
-		ml, err := m.connkeeper.Allocate()
+		err := m.processCommand(cmd)
 		if err != nil {
-			log.Printf("can't allocate milight device: %s", err)
-			time.Sleep(waitForMilightTimeout)
-			continue
-		}
-		err = cmd.Exec(ml)
-		if err != nil {
-			if err == milight.ErrInvalidResponse {
-				return
+			if err == errAllocateConnection || err == milight.ErrInvalidResponse {
+				time.Sleep(waitForMilightTimeout)
+				continue
 			}
 			log.Printf("milight command error: %s", err)
 		}
 	}
+}
+
+// processCommand allocates connection to Mi-Light device and executes command.
+func (m *MilightController) processCommand(cmd Command) error {
+	ml, err := m.connkeeper.Allocate()
+	if err != nil {
+		log.Printf("can't allocate milight device: %s", err)
+		return errAllocateConnection
+	}
+	defer m.connkeeper.Release()
+	return cmd.Exec(ml)
 }
 
 // GetSequences returns list of defined sequences.

@@ -30,8 +30,6 @@ func (m *ConnectionManager) Allocate() (LightController, error) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
-	log.Printf("allocating milight connection")
-
 	if m.ml != nil {
 		m.allocated = true
 		return m.ml, nil
@@ -66,7 +64,6 @@ func (m *ConnectionManager) GetStatus() (bool, bool) {
 func (m *ConnectionManager) Release() {
 	m.mux.Lock()
 	defer m.mux.Unlock()
-	log.Printf("milight connection released")
 	m.allocated = false
 }
 
