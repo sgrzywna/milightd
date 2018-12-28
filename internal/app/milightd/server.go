@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sgrzywna/milightd/pkg/models"
 )
@@ -17,9 +18,14 @@ type Server struct {
 
 // NewServer returns initialized HTTP server.
 func NewServer(port int, m Controller) *Server {
+	cors := handlers.CORS(
+		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
+		handlers.AllowedOrigins([]string{"*"}),
+	)
 	s := Server{
 		srv: &http.Server{
-			Handler:      newRouter(m),
+			Handler:      cors(newRouter(m)),
 			Addr:         fmt.Sprintf(":%d", port),
 			WriteTimeout: 15 * time.Second,
 			ReadTimeout:  15 * time.Second,
@@ -44,7 +50,7 @@ func newRouter(m Controller) *mux.Router {
 
 	v1.HandleFunc("/sequence", func(w http.ResponseWriter, r *http.Request) {
 		listSequences(w, r, m)
-	}).Methods("GET")
+	}).Methods("GET", "OPTIONS")
 
 	v1.HandleFunc("/sequence", func(w http.ResponseWriter, r *http.Request) {
 		addSequence(w, r, m)
@@ -52,7 +58,7 @@ func newRouter(m Controller) *mux.Router {
 
 	v1.HandleFunc("/sequence/{name}", func(w http.ResponseWriter, r *http.Request) {
 		getSequence(w, r, m)
-	}).Methods("GET")
+	}).Methods("GET", "OPTIONS")
 
 	v1.HandleFunc("/sequence/{name}", func(w http.ResponseWriter, r *http.Request) {
 		deleteSequence(w, r, m)
@@ -60,7 +66,7 @@ func newRouter(m Controller) *mux.Router {
 
 	v1.HandleFunc("/seqctrl", func(w http.ResponseWriter, r *http.Request) {
 		getSequenceState(w, r, m)
-	}).Methods("GET")
+	}).Methods("GET", "OPTIONS")
 
 	v1.HandleFunc("/seqctrl", func(w http.ResponseWriter, r *http.Request) {
 		setSequenceState(w, r, m)
@@ -94,6 +100,10 @@ func listSequences(w http.ResponseWriter, r *http.Request, c Controller) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	if r.Method == "OPTIONS" {
+		return
+	}
 
 	err = json.NewEncoder(w).Encode(sequences)
 	if err != nil {
@@ -145,6 +155,10 @@ func getSequence(w http.ResponseWriter, r *http.Request, c Controller) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
+	if r.Method == "OPTIONS" {
+		return
+	}
+
 	err = json.NewEncoder(w).Encode(seq)
 	if err != nil {
 		http.Error(w, "milightd error", http.StatusInternalServerError)
@@ -172,6 +186,10 @@ func getSequenceState(w http.ResponseWriter, r *http.Request, c Controller) {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	if r.Method == "OPTIONS" {
+		return
+	}
 
 	err = json.NewEncoder(w).Encode(state)
 	if err != nil {
