@@ -13,20 +13,13 @@ Minimal set of steps to initialize module and next turn on/off light with defaul
 ```go
 import "github.com/sgrzywna/milight"
 
-// Initialize module.
+// Initialize module and communication session.
 m, err := milight.NewMilight("192.168.0.102", 5987)
 if err != nil {
     fmt.Printf("milight error: %s\n", err)
     os.Exit(1)
 }
 defer m.Close()
-
-// Initialize communication session.
-err = m.InitSession()
-if err != nil {
-    fmt.Printf("milight session error: %s\n", err)
-    os.Exit(1)
-}
 
 err = m.On()
 if err != nil {

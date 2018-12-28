@@ -42,12 +42,12 @@
   revision = "336beac0a992ed9abaf4ef8e7042ba7fe3335c06"
 
 [[projects]]
-  digest = "1:bdcd0c166df17648cbc13c099b6801a461ce1a2a424131d5e114c511c496cb2c"
+  digest = "1:dce604d7117772f9d205b0091c61341cd225e9ba9d55ae29123300bc95368594"
   name = "github.com/sgrzywna/milight"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6262944645ec59f5886b1bc6d11867bc85461624"
-  version = "v1.0.0"
+  revision = "365f9336e66dd6df286f116d8e1e78ec7fb3ecc8"
+  version = "v1.0.1"
 
 [solve-meta]
   analyzer-name = "dep"

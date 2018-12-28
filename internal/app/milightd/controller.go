@@ -14,6 +14,8 @@ const (
 	waitForMilightTimeout = 3 * time.Second
 	// commandsBufferSize is the size of commands channel.
 	commandsBufferSize = 3
+	// connectionTTL is the Mi-Light connection time to live.
+	connectionTTL = 30 * time.Second
 )
 
 var (
@@ -85,7 +87,7 @@ func NewMilightController(addr string, port int, storeDir string) (*MilightContr
 		return nil, err
 	}
 	connman := NewConnectionManager(addr, port)
-	connkeeper := NewConnectionKeeper(connman, keeperCheckPeriod)
+	connkeeper := NewConnectionKeeper(connman, connectionTTL)
 	c := MilightController{
 		addr:       addr,
 		port:       port,
@@ -102,6 +104,7 @@ func NewMilightController(addr string, port int, storeDir string) (*MilightContr
 func (m *MilightController) Close() {
 	m.sequencer.Stop()
 	close(m.cmds)
+	m.connkeeper.Terminate()
 }
 
 // Process processes light control command.

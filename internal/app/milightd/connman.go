@@ -40,11 +40,6 @@ func (m *ConnectionManager) Allocate() (LightController, error) {
 		return nil, err
 	}
 
-	err = ml.InitSession()
-	if err != nil {
-		return nil, err
-	}
-
 	log.Printf("milight connected @ %s:%d", m.addr, m.port)
 
 	m.ml = ml

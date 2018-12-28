@@ -66,6 +66,28 @@ func TestSingleAllocation(t *testing.T) {
 	}
 }
 
+func TestSingleAllocationLongerThanTTL(t *testing.T) {
+	checkPeriod := 2 * time.Second
+	connman := NewTestConnectionManagerer()
+	keeper := NewConnectionKeeper(connman, checkPeriod)
+	keeper.Allocate()
+	time.Sleep(2 * checkPeriod)
+	keeper.Release()
+	keeper.Terminate()
+
+	if connman.terminateCalls != 1 {
+		t.Errorf("expected %d terminations, got %d", 1, connman.terminateCalls)
+	}
+
+	if connman.allocateCalls != 1 {
+		t.Errorf("expected %d allocations, got %d", 1, connman.allocateCalls)
+	}
+
+	if connman.releaseCalls != 1 {
+		t.Errorf("expected %d releases, got %d", 1, connman.releaseCalls)
+	}
+}
+
 func TestManyAllocations(t *testing.T) {
 	checkPeriod := 2 * time.Second
 	connman := NewTestConnectionManagerer()
@@ -73,8 +95,8 @@ func TestManyAllocations(t *testing.T) {
 
 	for i := 0; i < 6; i++ {
 		keeper.Allocate()
-		time.Sleep(1 * time.Second)
 		keeper.Release()
+		time.Sleep(1 * time.Second)
 	}
 
 	keeper.Terminate()

@@ -7,7 +7,7 @@ import (
 
 const (
 	// keeperCheckPeriod defines how often keeper will try to close unused Mi-Light connection.
-	keeperCheckPeriod = 15 * time.Second
+	keeperCheckPeriod = 3 * time.Second
 )
 
 // ConnectionManagerer repesents Mi-Light connection manager interface.
@@ -20,19 +20,19 @@ type ConnectionManagerer interface {
 
 // ConnectionKeeper is responsible for managing network connection to the Mi-Light device.
 type ConnectionKeeper struct {
-	connman     ConnectionManagerer
-	checkPeriod time.Duration
-	terminate   chan struct{}
-	lastCheck   time.Time
+	connman       ConnectionManagerer
+	connectionTTL time.Duration
+	terminate     chan struct{}
+	lastActivity  time.Time
 }
 
 // NewConnectionKeeper returns initialized ConnectionManager object.
-func NewConnectionKeeper(connman ConnectionManagerer, checkPeriod time.Duration) *ConnectionKeeper {
+func NewConnectionKeeper(connman ConnectionManagerer, connectionTTL time.Duration) *ConnectionKeeper {
 	keeper := ConnectionKeeper{
-		connman:     connman,
-		checkPeriod: checkPeriod,
-		terminate:   make(chan struct{}),
-		lastCheck:   time.Now(),
+		connman:       connman,
+		connectionTTL: connectionTTL,
+		terminate:     make(chan struct{}),
+		lastActivity:  time.Now(),
 	}
 	go keeper.monitorLoop()
 	return &keeper
@@ -46,11 +46,13 @@ func (k *ConnectionKeeper) Terminate() {
 
 // Allocate allocates Mi-Light connection.
 func (k *ConnectionKeeper) Allocate() (LightController, error) {
+	k.lastActivity = time.Now()
 	return k.connman.Allocate()
 }
 
 // Release releases Mi-Light connection.
 func (k *ConnectionKeeper) Release() {
+	k.lastActivity = time.Now()
 	k.connman.Release()
 }
 
@@ -64,7 +66,7 @@ func (k *ConnectionKeeper) monitorLoop() {
 		case <-k.terminate:
 			k.connman.Terminate()
 			return
-		case <-time.After(k.checkPeriod):
+		case <-time.After(keeperCheckPeriod):
 			k.closeConnection()
 		}
 	}
@@ -74,10 +76,8 @@ func (k *ConnectionKeeper) monitorLoop() {
 func (k *ConnectionKeeper) closeConnection() {
 	allocated, exists := k.connman.GetStatus()
 	if exists && !allocated {
-		if time.Since(k.lastCheck) > 2*k.checkPeriod {
+		if time.Since(k.lastActivity) > k.connectionTTL {
 			k.connman.Terminate()
 		}
-	} else {
-		k.lastCheck = time.Now()
 	}
 }
