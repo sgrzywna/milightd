@@ -36,6 +36,6 @@ func main() {
 
 	srv := milightd.NewServer(*port, m)
 
-	log.Printf("milightd listening @ :%d\n", *port)
+	log.Printf("milightd listening @ :%d", *port)
 	log.Fatal(srv.ListenAndServe())
 }

@@ -64,11 +64,12 @@ type Controller interface {
 
 // MilightController controls Mi-Light device.
 type MilightController struct {
-	addr      string
-	port      int
-	cmds      chan Command
-	sequencer Sequencer
-	store     *SequenceStore
+	addr       string
+	port       int
+	cmds       chan Command
+	sequencer  Sequencer
+	store      *SequenceStore
+	connkeeper *ConnectionKeeper
 }
 
 // NewMilightController returns initialized MilightController object.
@@ -77,11 +78,14 @@ func NewMilightController(addr string, port int, storeDir string) (*MilightContr
 	if err != nil {
 		return nil, err
 	}
+	connman := NewConnectionManager(addr, port)
+	connkeeper := NewConnectionKeeper(connman, keeperCheckPeriod)
 	c := MilightController{
-		addr:  addr,
-		port:  port,
-		cmds:  make(chan Command, commandsBufferSize),
-		store: store,
+		addr:       addr,
+		port:       port,
+		cmds:       make(chan Command, commandsBufferSize),
+		store:      store,
+		connkeeper: connkeeper,
 	}
 	c.sequencer = NewSequenceProcessor(&c)
 	go c.loop()
@@ -103,26 +107,26 @@ func (m *MilightController) Process(fromSequence bool, l models.Light) bool {
 	res := true
 
 	if l.Switch != nil {
-		log.Printf("milightd light switch %s\n", *l.Switch)
+		log.Printf("milightd light switch %s", *l.Switch)
 		if !m.exec(&LightSwitch{on: *l.Switch}) {
 			res = false
-			log.Printf("milightd light switch %s failed\n", *l.Switch)
+			log.Printf("milightd light switch %s failed", *l.Switch)
 		}
 	}
 
 	if l.Brightness != nil {
-		log.Printf("milightd brightness %d\n", *l.Brightness)
+		log.Printf("milightd brightness %d", *l.Brightness)
 		if !m.exec(&LightBrightness{level: *l.Brightness}) {
 			res = false
-			log.Printf("milightd brightness %d failed\n", *l.Brightness)
+			log.Printf("milightd brightness %d failed", *l.Brightness)
 		}
 	}
 
 	if l.Color != nil {
-		log.Printf("milightd color %s\n", *l.Color)
+		log.Printf("milightd color %s", *l.Color)
 		if !m.exec(&LightColor{color: *l.Color}) {
 			res = false
-			log.Printf("milightd color %s failed\n", *l.Color)
+			log.Printf("milightd color %s failed", *l.Color)
 		}
 	}
 
@@ -141,51 +145,26 @@ func (m *MilightController) exec(c Command) bool {
 
 // loop is the main processing loop.
 func (m *MilightController) loop() {
+	log.Printf("milight controller loop started")
+	defer log.Printf("milight controller loop terminated")
+
 	for {
-		ok := m.innerLoop()
+		cmd, ok := <-m.cmds
 		if !ok {
 			return
 		}
-	}
-}
-
-// innerLoop is the communication loop.
-func (m *MilightController) innerLoop() bool {
-	var ml *milight.Milight
-	var err error
-	for {
-		// Establish connection to Mi-Light device.
-		ml, err = milight.NewMilight(m.addr, m.port)
+		ml, err := m.connkeeper.Allocate()
 		if err != nil {
-			log.Printf("milight connection problem: %s\n", err)
+			log.Printf("can't allocate milight device: %s", err)
 			time.Sleep(waitForMilightTimeout)
 			continue
 		}
-
-		err = ml.InitSession()
+		err = cmd.Exec(ml)
 		if err != nil {
-			log.Printf("milight session problem: %s\n", err)
-			time.Sleep(waitForMilightTimeout)
-			continue
-		}
-
-		defer ml.Close()
-
-		log.Printf("milight connected @ %s:%d\n", m.addr, m.port)
-		defer log.Printf("milight disconnected\n")
-
-		for {
-			cmd, ok := <-m.cmds
-			if !ok {
-				return false
+			if err == milight.ErrInvalidResponse {
+				return
 			}
-			err = cmd.Exec(ml)
-			if err != nil {
-				if err == milight.ErrInvalidResponse {
-					return true
-				}
-				log.Printf("milight command error: %s\n", err)
-			}
+			log.Printf("milight command error: %s", err)
 		}
 	}
 }

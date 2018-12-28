@@ -55,11 +55,11 @@ func (m *ConnectionManager) Allocate() (LightController, error) {
 	return m.ml, nil
 }
 
-// IsAllocated returns true if Mi-Light connection is in use.
-func (m *ConnectionManager) IsAllocated() bool {
+// GetStatus returns status of the Mi-Light connection.
+func (m *ConnectionManager) GetStatus() (bool, bool) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
-	return m.allocated
+	return m.allocated, m.ml != nil
 }
 
 // Release releases Mi-Light connection.

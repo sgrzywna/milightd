@@ -11,7 +11,6 @@ type SequencerLoop struct {
 	lightCtrl LightAPI
 	seq       *models.Sequence
 	stop      chan struct{}
-	finished  chan bool
 	step      int
 }
 
@@ -21,7 +20,6 @@ func NewSequencerLoop(lightCtrl LightAPI, seq *models.Sequence) *SequencerLoop {
 		lightCtrl: lightCtrl,
 		seq:       seq,
 		stop:      make(chan struct{}),
-		finished:  make(chan bool),
 	}
 	go loop.loop()
 	return &loop
@@ -29,13 +27,13 @@ func NewSequencerLoop(lightCtrl LightAPI, seq *models.Sequence) *SequencerLoop {
 
 // Stop terminates sequencer loop.
 func (l *SequencerLoop) Stop() {
-	close(l.stop)
-	<-l.finished
+	l.stop <- struct{}{}
+	<-l.stop
 }
 
 // loop is the sequencer main loop.
 func (l *SequencerLoop) loop() {
-	defer func() { l.finished <- true }()
+	defer func() { l.stop <- struct{}{} }()
 
 	delay := time.Millisecond
 

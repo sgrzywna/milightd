@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// keeperCheckPeriod says how often keeper will try to close unused Mi-Light connection.
+	// keeperCheckPeriod defines how often keeper will try to close unused Mi-Light connection.
 	keeperCheckPeriod = 15 * time.Second
 )
 
@@ -14,23 +14,25 @@ const (
 type ConnectionManagerer interface {
 	Allocate() (LightController, error)
 	Release()
-	IsAllocated() bool
+	GetStatus() (bool, bool)
 	Terminate()
 }
 
 // ConnectionKeeper is responsible for managing network connection to the Mi-Light device.
 type ConnectionKeeper struct {
-	connman   ConnectionManagerer
-	done      chan struct{}
-	lastCheck time.Time
+	connman     ConnectionManagerer
+	checkPeriod time.Duration
+	terminate   chan struct{}
+	lastCheck   time.Time
 }
 
 // NewConnectionKeeper returns initialized ConnectionManager object.
-func NewConnectionKeeper(connman ConnectionManagerer) *ConnectionKeeper {
+func NewConnectionKeeper(connman ConnectionManagerer, checkPeriod time.Duration) *ConnectionKeeper {
 	keeper := ConnectionKeeper{
-		connman:   connman,
-		done:      make(chan struct{}),
-		lastCheck: time.Now(),
+		connman:     connman,
+		checkPeriod: checkPeriod,
+		terminate:   make(chan struct{}),
+		lastCheck:   time.Now(),
 	}
 	go keeper.monitorLoop()
 	return &keeper
@@ -38,7 +40,8 @@ func NewConnectionKeeper(connman ConnectionManagerer) *ConnectionKeeper {
 
 // Terminate terminates keeper loop.
 func (k *ConnectionKeeper) Terminate() {
-	k.done <- struct{}{}
+	k.terminate <- struct{}{}
+	<-k.terminate
 }
 
 // Allocate allocates Mi-Light connection.
@@ -55,11 +58,13 @@ func (k *ConnectionKeeper) Release() {
 func (k *ConnectionKeeper) monitorLoop() {
 	log.Printf("milight monitoring loop started")
 	defer log.Printf("milight monitoring loop terminated")
+	defer func() { k.terminate <- struct{}{} }()
 	for {
 		select {
-		case <-k.done:
+		case <-k.terminate:
+			k.connman.Terminate()
 			return
-		case <-time.After(keeperCheckPeriod):
+		case <-time.After(k.checkPeriod):
 			k.closeConnection()
 		}
 	}
@@ -67,8 +72,9 @@ func (k *ConnectionKeeper) monitorLoop() {
 
 // closeConnection closes idle connection.
 func (k *ConnectionKeeper) closeConnection() {
-	if !k.connman.IsAllocated() {
-		if time.Since(k.lastCheck) > 2*keeperCheckPeriod {
+	allocated, exists := k.connman.GetStatus()
+	if exists && !allocated {
+		if time.Since(k.lastCheck) > 2*k.checkPeriod {
 			k.connman.Terminate()
 		}
 	} else {
