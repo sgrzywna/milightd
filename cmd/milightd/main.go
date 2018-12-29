@@ -25,6 +25,7 @@ func main() {
 	var miport = flag.Int("miport", 5987, "Mi-Light network port")
 	var port = flag.Int("port", 8080, "listening port")
 	var storeDir = flag.String("store", defaultStoreFolder, "store folder")
+	var enableProfiling = flag.Bool("pprof", false, "enable profiling")
 
 	flag.Parse()
 
@@ -34,7 +35,7 @@ func main() {
 	}
 	defer m.Close()
 
-	srv := milightd.NewServer(*port, m)
+	srv := milightd.NewServer(*port, m, *enableProfiling)
 
 	log.Printf("milightd listening @ :%d", *port)
 	log.Fatal(srv.ListenAndServe())

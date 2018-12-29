@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -17,7 +18,7 @@ type Server struct {
 }
 
 // NewServer returns initialized HTTP server.
-func NewServer(port int, m Controller) *Server {
+func NewServer(port int, m Controller, enableProfiling bool) *Server {
 	cors := handlers.CORS(
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}),
@@ -25,7 +26,7 @@ func NewServer(port int, m Controller) *Server {
 	)
 	s := Server{
 		srv: &http.Server{
-			Handler:      cors(newRouter(m)),
+			Handler:      cors(newRouter(m, enableProfiling)),
 			Addr:         fmt.Sprintf(":%d", port),
 			WriteTimeout: 15 * time.Second,
 			ReadTimeout:  15 * time.Second,
@@ -40,7 +41,7 @@ func (s *Server) ListenAndServe() error {
 }
 
 // newRouter returns initialized HTTP router.
-func newRouter(m Controller) *mux.Router {
+func newRouter(m Controller, enableProfiling bool) *mux.Router {
 	r := mux.NewRouter()
 	v1 := r.PathPrefix("/api/v1/").Subrouter()
 
@@ -71,6 +72,17 @@ func newRouter(m Controller) *mux.Router {
 	v1.HandleFunc("/seqctrl", func(w http.ResponseWriter, r *http.Request) {
 		setSequenceState(w, r, m)
 	}).Methods("POST")
+
+	if enableProfiling {
+		r.HandleFunc("/debug/pprof/", pprof.Index)
+		r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+		r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+		r.Handle("/debug/pprof/block", pprof.Handler("block"))
+		r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+	}
 
 	return r
 }
