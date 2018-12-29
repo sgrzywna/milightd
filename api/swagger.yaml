@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   description: "Mi-Light web controller API."
-  version: "0.0.1"
+  version: "0.0.2"
   title: "Mi-Light API"
 host: "127.0.0.1:8080"
 basePath: "/api/v1"
@@ -181,6 +181,6 @@ definitions:
   SequenceState:
     type: string
     enum: &SEQSTATE
-      - start
-      - stop
-      - pause
+      - running
+      - stopped
+      - paused
