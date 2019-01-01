@@ -10,6 +10,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:664d37ea261f0fc73dd17f4a1f5f46d01fbb0b0d75f6375af064824424109b7d"
+  name = "github.com/gorilla/handlers"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7e0847f9db758cdebd26c149d0ae9d5d0b9c98ce"
+  version = "v1.4.0"
+
+[[projects]]
   digest = "1:e73f5b0152105f18bc131fba127d9949305c8693f8a762588a82a48f61756f5f"
   name = "github.com/gorilla/mux"
   packages = ["."]
@@ -34,17 +42,18 @@
   revision = "336beac0a992ed9abaf4ef8e7042ba7fe3335c06"
 
 [[projects]]
-  digest = "1:bdcd0c166df17648cbc13c099b6801a461ce1a2a424131d5e114c511c496cb2c"
+  digest = "1:dce604d7117772f9d205b0091c61341cd225e9ba9d55ae29123300bc95368594"
   name = "github.com/sgrzywna/milight"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6262944645ec59f5886b1bc6d11867bc85461624"
-  version = "v1.0.0"
+  revision = "365f9336e66dd6df286f116d8e1e78ec7fb3ecc8"
+  version = "v1.0.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/nanobox-io/golang-scribble",
     "github.com/sgrzywna/milight",
