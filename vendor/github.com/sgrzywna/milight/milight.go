@@ -56,7 +56,7 @@ var (
 type Milight struct {
 	conn         net.Conn
 	zone         byte
-	quit         chan bool
+	quit         chan struct{}
 	seqNum       byte
 	sessionID    [2]byte
 	lastActivity time.Time
@@ -69,21 +69,27 @@ func NewMilight(addr string, port int) (*Milight, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Milight{
+	m := Milight{
 		conn: conn,
 		zone: defaultZone,
-		quit: make(chan bool),
-	}, nil
+		quit: make(chan struct{}),
+	}
+	err = m.initSession()
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
 }
 
 // Close closes connection to Mi-Light device.
 func (m *Milight) Close() error {
-	close(m.quit)
+	m.quit <- struct{}{}
+	<-m.quit
 	return m.conn.Close()
 }
 
-// InitSession creates session if needed.
-func (m *Milight) InitSession() error {
+// initSession creates session if needed.
+func (m *Milight) initSession() error {
 	if m.sessionID[0] == 0 && m.sessionID[1] == 0 {
 		err := m.createSession()
 		if err != nil {
@@ -174,11 +180,12 @@ func (m *Milight) createSession() error {
 
 // keepAliveLoop periodically sends keep alive packets to sustain session.
 func (m *Milight) keepAliveLoop() {
+	defer func() { m.quit <- struct{}{} }()
 	m.lastActivity = time.Now()
 	for {
 		select {
 		case <-m.quit:
-			break
+			return
 		case <-time.After(2 * time.Second):
 			if time.Since(m.lastActivity) > defaultKeepAlivePeriod {
 				m.KeepAlive()
