@@ -21,10 +21,10 @@ var (
 	s1 = "off"
 
 	tests = []models.Sequence{
-		models.Sequence{
+		{
 			Name: n0,
 			Steps: []models.SequenceStep{
-				models.SequenceStep{
+				{
 					Light: models.Light{
 						Color:      &c0,
 						Brightness: &b0,
@@ -32,7 +32,7 @@ var (
 					},
 					Duration: 100,
 				},
-				models.SequenceStep{
+				{
 					Light: models.Light{
 						Color:      &c1,
 						Brightness: &b1,
@@ -42,10 +42,10 @@ var (
 				},
 			},
 		},
-		models.Sequence{
+		{
 			Name: n1,
 			Steps: []models.SequenceStep{
-				models.SequenceStep{
+				{
 					Light: models.Light{
 						Color:      &c1,
 						Brightness: &b1,
@@ -53,7 +53,7 @@ var (
 					},
 					Duration: 300,
 				},
-				models.SequenceStep{
+				{
 					Light: models.Light{
 						Color:      &c0,
 						Brightness: &b0,

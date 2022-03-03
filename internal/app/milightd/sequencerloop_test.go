@@ -33,7 +33,7 @@ func TestSequencerLoop(t *testing.T) {
 	seq := models.Sequence{
 		Name: n0,
 		Steps: []models.SequenceStep{
-			models.SequenceStep{
+			{
 				Light: models.Light{
 					Color:      &c0,
 					Brightness: &b0,
@@ -41,7 +41,7 @@ func TestSequencerLoop(t *testing.T) {
 				},
 				Duration: 100,
 			},
-			models.SequenceStep{
+			{
 				Light: models.Light{
 					Color:      &c1,
 					Brightness: &b1,

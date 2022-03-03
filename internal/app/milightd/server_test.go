@@ -68,7 +68,7 @@ func TestLightHandler(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK)
@@ -104,7 +104,7 @@ func TestGetSequences(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK)
@@ -133,7 +133,7 @@ func TestGetSequence(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK)
@@ -170,7 +170,7 @@ func TestAddSequence(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusCreated {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusCreated)
@@ -191,7 +191,7 @@ func TestDeleteSequence(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusNoContent {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusNoContent)
@@ -218,7 +218,7 @@ func TestGetSequenceState(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK)
@@ -249,7 +249,7 @@ func TestSetSequenceState(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	newRouter(&c).ServeHTTP(rr, req)
+	newRouter(&c, false).ServeHTTP(rr, req)
 
 	if rr.Code != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v", rr.Code, http.StatusOK)
