@@ -2,14 +2,10 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
-DEPCMD=dep
 
-.PHONY: all dep build test clean
+.PHONY: all build test clean
 
-all: test dep build
-
-dep:
-	$(DEPCMD) ensure
+all: test build
 
 build:
 	$(MAKE) -C cmd/milightd
